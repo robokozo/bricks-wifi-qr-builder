@@ -160,9 +160,8 @@ lego-wifi-qr-builder/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          # GitHub Pages deployment
-├── assets/
-│   └── css/
-│       └── main.css            # Global styles
+├── app/
+│   └── app.vue                 # Root application component
 ├── components/
 │   ├── WifiForm.vue            # WiFi credential input
 │   ├── BaseplateConfig.vue     # Baseplate dimension selector
@@ -176,6 +175,7 @@ lego-wifi-qr-builder/
 ├── pages/
 │   └── index.vue               # Main application page
 ├── public/
+│   ├── .nojekyll               # GitHub Pages configuration
 │   └── favicon.ico
 ├── nuxt.config.ts              # Nuxt configuration (SPA mode)
 ├── tsconfig.json

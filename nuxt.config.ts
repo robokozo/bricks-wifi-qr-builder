@@ -17,8 +17,5 @@ export default defineNuxtConfig({
     options: {
       hashMode: false
     }
-  },
-
-  // Global CSS
-  css: ['~/assets/css/main.css']
+  }
 })
