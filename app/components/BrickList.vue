@@ -123,10 +123,10 @@ Total: ${props.brickCount.total} pieces`
 
   try {
     await navigator.clipboard.writeText(text)
-    alert('Parts list copied to clipboard!')
+    // Success - could add a toast notification here in a future enhancement
   } catch (err) {
     console.error('Failed to copy:', err)
-    alert('Failed to copy to clipboard')
+    // Could show an inline error message in a future enhancement
   }
 }
 </script>
