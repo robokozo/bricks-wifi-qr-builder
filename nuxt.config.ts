@@ -29,4 +29,9 @@ export default defineNuxtConfig({
 
   // Nuxt UI 3+ configuration
   css: ["~/assets/css/main.css"],
+
+  // Nitro configuration
+  nitro: {
+    preset: "github_pages",
+  },
 });
