@@ -50,17 +50,52 @@ export const useLegoConverter = () => {
   const baseplateSize = 48;
 
   // All available brick/plate sizes (normalized: larger dimension first)
-  // Used as defaults and for the selector
+  // Includes all standard rectangular LEGO plates and tiles
   const allBrickSizes: BrickSize[] = [
-    { width: 8, height: 2 },
-    { width: 6, height: 2 },
-    { width: 4, height: 2 },
-    { width: 4, height: 1 },
-    { width: 3, height: 2 },
-    { width: 3, height: 1 },
+    // Large plates/tiles
+    { width: 8, height: 16 },
+    { width: 6, height: 12 },
+    { width: 6, height: 10 },
+    { width: 6, height: 8 },
+    { width: 6, height: 6 },
+    { width: 4, height: 12 },
+    { width: 4, height: 10 },
+    { width: 4, height: 8 },
+    { width: 4, height: 6 },
+    { width: 4, height: 4 },
+    { width: 3, height: 3 },
+    // 2× wide
+    { width: 2, height: 16 },
+    { width: 2, height: 14 },
+    { width: 2, height: 12 },
+    { width: 2, height: 10 },
+    { width: 2, height: 8 },
+    { width: 2, height: 6 },
+    { width: 2, height: 4 },
+    { width: 2, height: 3 },
     { width: 2, height: 2 },
-    { width: 2, height: 1 },
+    // 1× wide
+    { width: 1, height: 12 },
+    { width: 1, height: 10 },
+    { width: 1, height: 8 },
+    { width: 1, height: 6 },
+    { width: 1, height: 5 },
+    { width: 1, height: 4 },
+    { width: 1, height: 3 },
+    { width: 1, height: 2 },
     { width: 1, height: 1 }, // Always included
+  ];
+
+  // Default brick sizes for a reasonable starting point
+  const defaultBrickSizes: BrickSize[] = [
+    { width: 2, height: 8 },
+    { width: 2, height: 6 },
+    { width: 2, height: 4 },
+    { width: 2, height: 3 },
+    { width: 2, height: 2 },
+    { width: 1, height: 4 },
+    { width: 1, height: 3 },
+    { width: 1, height: 2 },
   ];
 
   // Convert user-selected sizes to algorithm format (sorted by area, largest first)
@@ -202,14 +237,16 @@ export const useLegoConverter = () => {
   // Optimize brick layout using greedy algorithm
   const optimizeBrickLayout = (
     layout: LegoLayout,
-    availableSizes: BrickSize[] = [],
+    foregroundSizes: BrickSize[] = [],
+    backgroundSizes: BrickSize[] = [],
   ): OptimizedBrickCount => {
     const { grid } = layout;
     const height = grid.length;
     const width = grid[0]?.length ?? 0;
 
     // Get brick sizes to use (sorted by area, includes 1x1)
-    const brickSizes = getBrickSizesForOptimization(availableSizes);
+    const foregroundBrickSizes = getBrickSizesForOptimization(foregroundSizes);
+    const backgroundBrickSizes = getBrickSizesForOptimization(backgroundSizes);
 
     // Track which cells have been covered
     const used: boolean[][] = Array(height)
@@ -230,6 +267,9 @@ export const useLegoConverter = () => {
 
         const isForeground = grid[y]?.[x] ?? false;
         const brickMap = isForeground ? foregroundBricks : backgroundBricks;
+        const brickSizes = isForeground
+          ? foregroundBrickSizes
+          : backgroundBrickSizes;
 
         // Try each brick size from largest to smallest
         let placed = false;
@@ -343,6 +383,7 @@ export const useLegoConverter = () => {
   return {
     baseplateSize,
     allBrickSizes,
+    defaultBrickSizes,
     getMaxScale,
     convertToLegoLayout,
     calculateBrickCount,

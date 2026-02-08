@@ -8,14 +8,16 @@ const props = withDefaults(defineProps<{
   background: string
   foregroundPieceType?: 'Plate' | 'Tile'
   backgroundPieceType?: 'Plate' | 'Tile'
-  availableBrickSizes?: BrickSize[]
+  foregroundBrickSizes?: BrickSize[]
+  backgroundBrickSizes?: BrickSize[]
   useBaseplate?: boolean
   baseplateSize?: number
   baseplateColor?: string
 }>(), {
   foregroundPieceType: 'Plate',
   backgroundPieceType: 'Tile',
-  availableBrickSizes: () => [],
+  foregroundBrickSizes: () => [],
+  backgroundBrickSizes: () => [],
   useBaseplate: false,
   baseplateSize: 48,
   baseplateColor: '#FFFFFF'
@@ -26,7 +28,8 @@ const emit = defineEmits<{
   (e: 'update:background', value: string): void
   (e: 'update:foregroundPieceType', value: 'Plate' | 'Tile'): void
   (e: 'update:backgroundPieceType', value: 'Plate' | 'Tile'): void
-  (e: 'update:availableBrickSizes', value: BrickSize[]): void
+  (e: 'update:foregroundBrickSizes', value: BrickSize[]): void
+  (e: 'update:backgroundBrickSizes', value: BrickSize[]): void
   (e: 'update:useBaseplate', value: boolean): void
   (e: 'update:baseplateSize', value: number): void
   (e: 'update:baseplateColor', value: string): void
@@ -158,7 +161,7 @@ const ratingTextClass = computed(() => {
         <span>🧱</span> Piece Settings
       </h3>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-2 gap-4 mb-6">
         <div>
           <label for="fg-piece-type" class="block mb-2 text-gray-700 font-medium">Foreground Piece Type</label>
           <select id="fg-piece-type" :value="foregroundPieceType"
@@ -180,8 +183,14 @@ const ratingTextClass = computed(() => {
         </div>
       </div>
 
-      <BrickSizeSelector :model-value="availableBrickSizes"
-        @update:model-value="emit('update:availableBrickSizes', $event)" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <BrickSizeSelector :model-value="foregroundBrickSizes"
+          @update:model-value="emit('update:foregroundBrickSizes', $event)" label="Foreground" :color="foreground"
+          :show-studs="foregroundPieceType === 'Plate'" />
+        <BrickSizeSelector :model-value="backgroundBrickSizes"
+          @update:model-value="emit('update:backgroundBrickSizes', $event)" label="Background" :color="background"
+          :disabled="useBaseplate" :show-studs="backgroundPieceType === 'Plate'" />
+      </div>
     </section>
 
     <!-- Baseplate Settings -->

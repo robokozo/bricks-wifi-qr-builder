@@ -6,8 +6,10 @@ const props = withDefaults(defineProps<{
   height: number
   color: string
   showStuds?: boolean
+  cellSize?: number
 }>(), {
-  showStuds: true
+  showStuds: true,
+  cellSize: 12
 })
 
 // Normalize: always display with larger dimension as width (horizontal)
@@ -50,8 +52,11 @@ const rows = computed(() => {
   <div class="inline-flex flex-col rounded border border-black/20 shadow-sm overflow-hidden"
     :style="{ backgroundColor: color }">
     <div v-for="(row, rowIdx) in rows" :key="rowIdx" class="flex">
-      <div v-for="stud in row" :key="`${stud.row}-${stud.col}`" class="w-4 h-4 flex items-center justify-center">
-        <div v-if="showStuds" class="w-2.5 h-2.5 rounded-full border border-black/10" :style="{
+      <div v-for="stud in row" :key="`${stud.row}-${stud.col}`" class="flex items-center justify-center"
+        :style="{ width: `${cellSize}px`, height: `${cellSize}px` }">
+        <div v-if="showStuds" class="rounded-full border border-black/10" :style="{
+          width: `${cellSize * 0.6}px`,
+          height: `${cellSize * 0.6}px`,
           backgroundColor: studColor,
           boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)'
         }" />

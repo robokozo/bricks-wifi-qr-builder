@@ -14,7 +14,7 @@ useHead({
 
 // Composables
 const { generateWiFiString, generateQRMatrix, getQRCodeSize } = useQRCode()
-const { convertToLegoLayout, calculateBrickCount, optimizeBrickLayout, allBrickSizes } = useLegoConverter()
+const { convertToLegoLayout, calculateBrickCount, optimizeBrickLayout, defaultBrickSizes } = useLegoConverter()
 
 // State
 const wifiConfig = ref<WiFiConfig>({
@@ -31,8 +31,9 @@ const baseplateColor = ref('#FFFFFF') // Default to background color
 const foregroundColor = ref('#000000')
 const backgroundColor = ref('#FFFFFF')
 
-// Default to all brick sizes selected (except 1x1 which is always included)
-const availableBrickSizes = ref<BrickSize[]>([...allBrickSizes.filter(s => !(s.width === 1 && s.height === 1))])
+// Default to common brick sizes selected (not all - that would be overwhelming)
+const foregroundBrickSizes = ref<BrickSize[]>([...defaultBrickSizes])
+const backgroundBrickSizes = ref<BrickSize[]>([...defaultBrickSizes])
 
 // Piece type selection (Plate = studs, Tile = smooth)
 const foregroundPieceType = ref<'Plate' | 'Tile'>('Plate')
@@ -61,7 +62,7 @@ const brickCount = computed<BrickCount>(() => {
 
 const optimizedBrickCount = computed<OptimizedBrickCount | null>(() => {
   if (!legoLayout.value) return null
-  return optimizeBrickLayout(legoLayout.value, availableBrickSizes.value)
+  return optimizeBrickLayout(legoLayout.value, foregroundBrickSizes.value, backgroundBrickSizes.value)
 })
 
 // Methods
@@ -107,8 +108,9 @@ const generateQR = async () => {
         <!-- Step 3: Setup (only shown after QR is generated) -->
         <ColorPicker v-if="qrMatrix" v-model:foreground="foregroundColor" v-model:background="backgroundColor"
           v-model:foreground-piece-type="foregroundPieceType" v-model:background-piece-type="backgroundPieceType"
-          v-model:available-brick-sizes="availableBrickSizes" v-model:use-baseplate="useBaseplate"
-          v-model:baseplate-size="baseplateSize" v-model:baseplate-color="baseplateColor" />
+          v-model:foreground-brick-sizes="foregroundBrickSizes" v-model:background-brick-sizes="backgroundBrickSizes"
+          v-model:use-baseplate="useBaseplate" v-model:baseplate-size="baseplateSize"
+          v-model:baseplate-color="baseplateColor" />
 
         <!-- Results (shown when QR is generated) -->
         <div v-if="qrMatrix && legoLayout" class="space-y-6">

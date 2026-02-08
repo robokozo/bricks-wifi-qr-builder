@@ -16,6 +16,39 @@ const props = withDefaults(defineProps<{
   useBaseplate: false
 })
 
+// LEGO part number mappings from brickarchitect.com
+const platePartNumbers: Record<string, string> = {
+  '1×1': '3024', '1×2': '3023', '1×3': '3623', '1×4': '3710', '1×5': '78329',
+  '1×6': '3666', '1×8': '3460', '1×10': '4477', '1×12': '60479',
+  '2×2': '3022', '2×3': '3021', '2×4': '3020', '2×6': '3795', '2×8': '3034',
+  '2×10': '3832', '2×12': '2445', '2×14': '91988', '2×16': '4282',
+  '3×3': '11212',
+  '4×4': '3031', '4×6': '3032', '4×8': '3035', '4×10': '3030', '4×12': '3029',
+  '6×6': '3958', '6×8': '3036', '6×10': '3033', '6×12': '3028',
+  '8×16': '92438',
+}
+
+const tilePartNumbers: Record<string, string> = {
+  '1×1': '3070', '1×2': '3069', '1×3': '63864', '1×4': '2431',
+  '1×6': '6636', '1×8': '4162',
+  '2×2': '3068', '2×3': '26603', '2×4': '87079', '2×6': '69729',
+  '4×4': '1751', '6×6': '10202', '8×16': '90498',
+}
+
+const getPartNumber = (width: number, height: number, pieceType: 'Plate' | 'Tile'): string | null => {
+  // Try both orientations (width×height and height×width)
+  const key1 = `${width}×${height}`
+  const key2 = `${height}×${width}`
+  const lookup = pieceType === 'Plate' ? platePartNumbers : tilePartNumbers
+  return lookup[key1] || lookup[key2] || null
+}
+
+const getPartDisplay = (width: number, height: number, pieceType: 'Plate' | 'Tile'): string => {
+  const partNumber = getPartNumber(width, height, pieceType)
+  const baseName = `${width}×${height} ${pieceType}`
+  return partNumber ? `${baseName} (Part ${partNumber})` : baseName
+}
+
 type SortOption = 'size-desc' | 'size-asc' | 'count-desc' | 'count-asc'
 
 const sortBy = ref<SortOption>('count-desc')
@@ -72,12 +105,12 @@ const printPartsList = () => {
   if (!props.optimizedBrickCount) return
 
   const foregroundList = props.optimizedBrickCount.foreground
-    .map(b => `- ${b.width}×${b.height} ${props.foregroundPieceType}: ${b.count} pieces`)
+    .map(b => `- ${getPartDisplay(b.width, b.height, props.foregroundPieceType)}: ${b.count} pieces`)
     .join('\n')
 
   const backgroundSection = props.useBaseplate
     ? `BACKGROUND: Using baseplate (${props.background})`
-    : `BACKGROUND (Light modules) - Color: ${props.background}\n${props.optimizedBrickCount.background.map(b => `- ${b.width}×${b.height} ${props.backgroundPieceType}: ${b.count} pieces`).join('\n')}\nSubtotal: ${props.optimizedBrickCount.backgroundTotal} pieces`
+    : `BACKGROUND (Light modules) - Color: ${props.background}\n${props.optimizedBrickCount.background.map(b => `- ${getPartDisplay(b.width, b.height, props.backgroundPieceType)}: ${b.count} pieces`).join('\n')}\nSubtotal: ${props.optimizedBrickCount.backgroundTotal} pieces`
 
   const printContent = `
 Brick WiFi QR Code - Optimized Parts List
@@ -142,12 +175,18 @@ const copyPartsList = async () => {
   if (!props.optimizedBrickCount) return
 
   const foregroundList = props.optimizedBrickCount.foreground
-    .map(b => `${b.count}× ${b.width}×${b.height}`)
+    .map(b => {
+      const partNum = getPartNumber(b.width, b.height, props.foregroundPieceType)
+      return `${b.count}× ${b.width}×${b.height}${partNum ? ` (${partNum})` : ''}`
+    })
     .join(', ')
 
   const backgroundSection = props.useBaseplate
     ? `Background: Using baseplate (${props.background})`
-    : `Background (${props.background}): ${props.optimizedBrickCount.background.map(b => `${b.count}× ${b.width}×${b.height}`).join(', ')}\nTotal: ${props.optimizedBrickCount.backgroundTotal} pieces`
+    : `Background (${props.background}): ${props.optimizedBrickCount.background.map(b => {
+      const partNum = getPartNumber(b.width, b.height, props.backgroundPieceType)
+      return `${b.count}× ${b.width}×${b.height}${partNum ? ` (${partNum})` : ''}`
+    }).join(', ')}\nTotal: ${props.optimizedBrickCount.backgroundTotal} pieces`
 
   const text = `Brick WiFi QR Code - Optimized Parts List
 
@@ -204,6 +243,9 @@ Savings: ${props.optimizedBrickCount.savingsPercent}% (${props.brickCount.total 
             <div class="flex-1">
               <div class="font-semibold text-gray-900">{{ brick.width }}×{{ brick.height }} {{ foregroundPieceType }}
               </div>
+              <div v-if="getPartNumber(brick.width, brick.height, foregroundPieceType)" class="text-xs text-gray-500">
+                Part {{ getPartNumber(brick.width, brick.height, foregroundPieceType) }}
+              </div>
             </div>
             <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
               {{ brick.count }} pieces
@@ -226,6 +268,9 @@ Savings: ${props.optimizedBrickCount.savingsPercent}% (${props.brickCount.total 
             <div class="flex-1">
               <div class="font-semibold text-gray-900">{{ brick.width }}×{{ brick.height }} {{ backgroundPieceType }}
               </div>
+              <div v-if="getPartNumber(brick.width, brick.height, backgroundPieceType)" class="text-xs text-gray-500">
+                Part {{ getPartNumber(brick.width, brick.height, backgroundPieceType) }}
+              </div>
             </div>
             <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
               {{ brick.count }} pieces
@@ -242,17 +287,6 @@ Savings: ${props.optimizedBrickCount.savingsPercent}% (${props.brickCount.total 
         <strong>Total pieces needed: {{ displayTotal }}</strong>
       </div>
 
-      <!-- Shopping Tips -->
-      <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg">
-        <div class="font-semibold">💡 Shopping Tips</div>
-        <ul class="mt-2 space-y-1 text-sm list-disc list-inside">
-          <li>Plates are approximately 3.2mm thick</li>
-          <li>Tiles have a smooth top surface (recommended for finished look)</li>
-          <li>Consider ordering 5-10% extra pieces for any mistakes</li>
-          <li>Both foreground and background pieces should be opaque for best scanning</li>
-          <li>Larger bricks are easier to work with and more stable</li>
-        </ul>
-      </div>
 
       <!-- Action Buttons -->
       <div class="flex gap-3 flex-wrap">
