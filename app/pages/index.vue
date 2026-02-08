@@ -129,11 +129,7 @@ const generateQR = async () => {
       <!-- Footer -->
       <footer class="text-center text-white mt-12 py-8 opacity-90">
         <p>
-          Built with Nuxt.js 3 • Open Source on
-          <a href="https://github.com/robokozo/lego-wifi-qr-builder" target="_blank"
-            class="underline hover:opacity-80 transition-opacity">
-            GitHub
-          </a>
+          Built with Nuxt.js 3
         </p>
       </footer>
     </UContainer>
